@@ -1,8 +1,6 @@
 package edu.ringtests.View;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.File;
 
@@ -14,9 +12,6 @@ public class ForgePathDialog extends JDialog {
     private JButton chooseButton;
 
     public ForgePathDialog() {
-        setContentPane(contentPane);
-        setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
 
 
         buttonOK.addActionListener(new ActionListener() {
@@ -57,6 +52,10 @@ public class ForgePathDialog extends JDialog {
             }
         });
 
+        setContentPane(contentPane);
+        setModal(true);
+        getRootPane().setDefaultButton(buttonOK);
+
         pack();
         this.setVisible(true);
     }
@@ -79,4 +78,5 @@ public class ForgePathDialog extends JDialog {
     public String getPath() {
         return pathField.getText();
     }
+
 }

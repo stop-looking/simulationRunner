@@ -29,9 +29,12 @@ public class MainWindow {
     private JTextField dataFileField;
     private JButton chooseDataButton;
     private JButton startButton;
+    private JFrame frame;
 
     private final String PROPERTIES_FILE = "properties.xml";
+    private final String FORGE_PATH_KEY = "forgePath";
 
+    private String forgePath;
     private Simulation selectedSimulation;
 
     private ActionListener createFileChooseDialog(final String extension, final String description, final JTextField textField) {
@@ -99,7 +102,7 @@ public class MainWindow {
     }
 
 
-        public MainWindow() {
+    public MainWindow() {
         chooseDataButton.addActionListener(createFileChooseDialog("csv", "Plik CSV", dataFileField));
         chooseProjectButton.addActionListener(createFileChooseDialog("tpf", "Plik projektu Forge3", projectField));
         simulationBox.addItemListener(new ItemListener() {
@@ -110,33 +113,46 @@ public class MainWindow {
             }
         });
 
+
+        frame = new JFrame("Simulation Runner");
+        frame.setContentPane(mainPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+
+        loadProperties();
+
+        frame.setVisible(true);
+    }
+
+    private void loadProperties() {
         Properties properties = new Properties();
-        File propertiesFile = new File(PROPERTIES_FILE);
-        if(!propertiesFile.exists()){
+        File propFile = new File(PROPERTIES_FILE);
+        if (!propFile.exists()) {
             ForgePathDialog dialog = new ForgePathDialog();
-            properties.put("forgePath", dialog.getPath());
+            properties.put(FORGE_PATH_KEY, dialog.getPath());
             try {
-                properties.storeToXML(new FileOutputStream(PROPERTIES_FILE), "Properites file");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                properties.storeToXML(new FileOutputStream(PROPERTIES_FILE), "simulationRunner properties file");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else
+        } else {
             try {
                 properties.loadFromXML(new FileInputStream(PROPERTIES_FILE));
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        forgePath = properties.getProperty(FORGE_PATH_KEY);
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("MainWindow");
+        new MainWindow();
+       /* JFrame frame = new JFrame("MainWindow");
         frame.setContentPane(new MainWindow().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setVisible(true);
+        frame.setVisible(true);*/
     }
 
 }
