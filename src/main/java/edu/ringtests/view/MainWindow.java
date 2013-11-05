@@ -1,6 +1,9 @@
-package edu.ringtests.View;
+package edu.ringtests.view;
 
-import edu.ringtests.Simulation;
+import edu.ringtests.simulation.CalibrationCurvesWorker;
+import edu.ringtests.simulation.Simulation;
+import edu.ringtests.simulation.SimulationWorker;
+import org.apache.log4j.BasicConfigurator;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -23,9 +26,9 @@ public class MainWindow {
     private JComboBox frictionBox;
     private JTextField projectField;
     private JButton chooseProjectButton;
-    private JRadioButton generacjaKrzywychKalibracyjnychRadioButton;
+    private JRadioButton calibrationCurvesButtion;
     private JTextField calibrationCoeffsField;
-    private JRadioButton wyznaczanieKrzywychEksperymentalnychRadioButton;
+    private JRadioButton optimalizationButton;
     private JTextField dataFileField;
     private JButton chooseDataButton;
     private JButton startButton;
@@ -74,7 +77,7 @@ public class MainWindow {
             });
 
             for (File f : files)
-                simulations.add(new Simulation(f));
+                simulations.add(new Simulation(f, false));
         }
 
         if (simulations.size() > 0) {
@@ -87,7 +90,7 @@ public class MainWindow {
         }
     }
 
-    private void populateFrictionBox(Simulation selectedSimulation) {
+    private void populateFrictionBox(final Simulation selectedSimulation) {
         File[] files = selectedSimulation.getSimulationDir().listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -99,6 +102,12 @@ public class MainWindow {
         frictionBox.setModel(model);
         selectedSimulation.setFrictionFile((File) frictionBox.getSelectedItem());
         frictionBox.setEnabled(files.length > 0 ? true : false);
+        frictionBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedSimulation.setFrictionFile((File) frictionBox.getSelectedItem());
+            }
+        });
     }
 
 
@@ -113,6 +122,22 @@ public class MainWindow {
             }
         });
 
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SimulationWorker worker = null;
+                if (calibrationCurvesButtion.isSelected()) {
+                    String[] factorsString = calibrationCoeffsField.getText().split(" ");
+                    double[] factors = new double[factorsString.length];
+
+                    for (int i = 0; i < factors.length; i++)
+                        factors[i] = Double.parseDouble(factorsString[i]);
+
+                    worker = new CalibrationCurvesWorker(selectedSimulation, factors, forgePath);
+                    worker.run();
+                }
+            }
+        });
 
         frame = new JFrame("Simulation Runner");
         frame.setContentPane(mainPanel);
@@ -147,12 +172,8 @@ public class MainWindow {
     }
 
     public static void main(String[] args) {
+        BasicConfigurator.configure();
         new MainWindow();
-       /* JFrame frame = new JFrame("MainWindow");
-        frame.setContentPane(new MainWindow().mainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);*/
     }
 
 }

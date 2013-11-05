@@ -1,4 +1,4 @@
-package edu.ringtests.View;
+package edu.ringtests.view;
 
 import javax.swing.*;
 import java.awt.event.*;

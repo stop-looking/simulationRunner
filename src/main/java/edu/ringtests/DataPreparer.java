@@ -4,19 +4,20 @@ import java.io.*;
 
 /**
  * @author Kamil Sikora
+ * TODO działa, nie działa?
  */
 public class DataPreparer {
-    public static void main(String[] args) {
+    public static void extractData(File source, File dest, double factor) {
         int[] columnsIndex = {0, 1, 2, 3, 4};
 
         double[][] z1Data = new double[0][], z2Data = new double[0][],
                 x1Data = new double[0][], x2Data = new double[0][];
 
         try {
-            VtfExplorer z1 = new VtfExplorer(new File("z-11.vtf"), VtfExplorer.HEIGHT_COLUMNS);
-            VtfExplorer z2 = new VtfExplorer(new File("z-12.vtf"), VtfExplorer.HEIGHT_COLUMNS);
-            VtfExplorer x1 = new VtfExplorer(new File("x-inner1.vtf"), VtfExplorer.WIDTH_COLUMNS);
-            VtfExplorer x2 = new VtfExplorer(new File("x-inner2.vtf"), VtfExplorer.WIDTH_COLUMNS);
+            VtfExplorer z1 = new VtfExplorer(new File(source, "result\\z-11.vtf"), VtfExplorer.HEIGHT_COLUMNS);
+            VtfExplorer z2 = new VtfExplorer(new File(source, "result\\z-12.vtf"), VtfExplorer.HEIGHT_COLUMNS);
+            VtfExplorer x1 = new VtfExplorer(new File(source, "result\\x-inner1.vtf"), VtfExplorer.WIDTH_COLUMNS);
+            VtfExplorer x2 = new VtfExplorer(new File(source, "result\\x-inner2.vtf"), VtfExplorer.WIDTH_COLUMNS);
 
             z1Data = z1.fetchAll();
             z2Data = z2.fetchAll();
@@ -40,7 +41,7 @@ public class DataPreparer {
 
 
         try {
-            String outName = "out.csv";
+            File outName = new File("out-" + factor + ".csv");
             BufferedWriter writer = new BufferedWriter(new FileWriter(outName));
             writer.write(outBuilder.toString());
             writer.close();

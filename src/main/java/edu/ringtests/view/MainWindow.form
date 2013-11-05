@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="edu.ringtests.View.MainWindow">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="edu.ringtests.view.MainWindow">
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="5" left="5" bottom="5" right="5"/>
     <constraints>
       <xy x="20" y="20" width="500" height="400"/>
     </constraints>
-    <properties/>
+    <properties>
+      <preferredSize width="700" height="327"/>
+    </properties>
     <border type="none"/>
     <children>
       <grid id="e14a" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -82,7 +84,7 @@
         <properties/>
         <border type="etched"/>
         <children>
-          <component id="d5829" class="javax.swing.JRadioButton" binding="wyznaczanieKrzywychEksperymentalnychRadioButton" default-binding="true">
+          <component id="d5829" class="javax.swing.JRadioButton" binding="optimalizationButton">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -129,7 +131,7 @@
         <properties/>
         <border type="etched"/>
         <children>
-          <component id="ced5e" class="javax.swing.JRadioButton" binding="generacjaKrzywychKalibracyjnychRadioButton" default-binding="true">
+          <component id="ced5e" class="javax.swing.JRadioButton" binding="calibrationCurvesButtion">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
