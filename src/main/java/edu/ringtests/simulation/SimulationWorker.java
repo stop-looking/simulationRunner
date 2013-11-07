@@ -1,9 +1,9 @@
 package edu.ringtests.simulation;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.util.Arrays;
 
 /**
  * Interface designed for running different kind of jobs, like generating calibration curves or determining real friction factor.
@@ -41,6 +41,7 @@ public abstract class SimulationWorker {
         dest.mkdir();
         logger.info(String.format("Folder %s nie istnieje.\n", dest.toString()));
 
+        /* Create workdir for new simulation */
         recursiveCopy(simulation.getSimulationDir(), dest);
         logger.info(String.format("Kopiowanie z %s do %s", simulation.getSimulationDir(), dest.toString()));
     }
@@ -79,7 +80,36 @@ public abstract class SimulationWorker {
 
     /*TODO przekazywać do simualtionWorker ścieżkę do projektu!*/
     protected void forceProjectSave() {
-        String cmd = String.format(SAVE_PROJECT_CMD, simulation.getSimulationDir(), simulation.getName());
+        String cmd = String.format(SAVE_PROJECT_CMD, simulation.getSimulationDir().getParent() + "\\" + simulation.getProjectName(), simulation.getName());
+        try {
+            FileWriter cmdFile = new FileWriter(new File(forgePath, "newSim.txt"));
+            cmdFile.write(cmd);
+            cmdFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        ProcessBuilder builder = new ProcessBuilder(
+                forgePath + "\\GLPreEngine.exe", "-command", "\"cmd newSim.txt\"");
+        builder.directory(new File(forgePath));
+        logger.info(builder.directory());
+        Process p = null;
+        try {
+            p = builder.start();
+            InputStream is = p.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+
+            System.out.println("\n\n");
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("\n\n");
     }
 
     private void recursiveCopy(File fSource, File fDest) {

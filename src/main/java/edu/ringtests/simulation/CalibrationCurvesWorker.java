@@ -14,6 +14,7 @@ public class CalibrationCurvesWorker extends SimulationWorker {
         this.factors = factors;
     }
 
+    /* TODO zapis parametrów symulacji musi odbywać się w głównym projekcie */
     @Override
     protected void setFrictionParameter(double factor) {
         File frictionFile = simulation.getFrictionFile();
@@ -48,6 +49,13 @@ public class CalibrationCurvesWorker extends SimulationWorker {
     public void run() {
         for (int i = 0; i < factors.length; ++i) {
             double currentFactor = factors[i];
+
+            /* TODO
+            * 1 - utworzenie nowej symulacji z nowym wspolczynnikiem
+            * 2 - przygotowanie srodowiska - SimulationWorker
+            * 3 - wykonanie
+            * 4 - zapis wynikow i sprzatanie
+            * */
 
             setFrictionParameter(currentFactor);
             prepareEnviroment(currentFactor);

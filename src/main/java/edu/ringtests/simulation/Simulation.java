@@ -12,18 +12,16 @@ public class Simulation {
 
     private File simulationDir;
     private File frictionFile;
+    private String projectName;
     /**
      * Sets simulation read only - cant modify its parameters.
      */
     private boolean readOnly;
 
-    public Simulation(File simulationDir, boolean readOnly) {
+    public Simulation(File simulationDir, String projectName, boolean readOnly) {
         this.simulationDir = simulationDir.getParentFile();
+        this.projectName = projectName;
         this.readOnly = readOnly;
-    }
-
-    public Simulation(File simulationDir, double frictionFactor){
-
     }
 
     @Override
@@ -64,5 +62,9 @@ public class Simulation {
 
     public File saveResults(){
         return null;
+    }
+
+    public String getProjectName() {
+        return projectName;
     }
 }

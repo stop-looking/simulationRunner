@@ -37,8 +37,9 @@ public class MainWindow {
     private final String PROPERTIES_FILE = "properties.xml";
     private final String FORGE_PATH_KEY = "forgePath";
 
-    private String forgePath;
     private Simulation selectedSimulation;
+    private String forgePath;
+    private String projectName;
 
     private ActionListener createFileChooseDialog(final String extension, final String description, final JTextField textField) {
         return new ActionListener() {
@@ -51,15 +52,15 @@ public class MainWindow {
                 fc.showOpenDialog(null);
                 if (fc.getSelectedFile() != null) {
                     textField.setText(fc.getSelectedFile().getPath());
-                    populateSimulationBox(fc.getSelectedFile().getParent());
+                    populateSimulationBox(fc.getSelectedFile());
                 }
 
             }
         };
     }
 
-    private void populateSimulationBox(String dir) {
-        File parent = new File(dir);
+    private void populateSimulationBox(File projectFile) {
+        File parent = new File(projectFile.getParent());
         File[] dirlist = parent.listFiles(new java.io.FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -77,7 +78,7 @@ public class MainWindow {
             });
 
             for (File f : files)
-                simulations.add(new Simulation(f, false));
+                simulations.add(new Simulation(f, projectFile.getName(), false));
         }
 
         if (simulations.size() > 0) {
