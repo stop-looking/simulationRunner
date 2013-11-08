@@ -1,5 +1,6 @@
 package edu.ringtests.simulation;
 
+import edu.ringtests.DataPreparer;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -27,7 +28,7 @@ public abstract class SimulationWorker {
 
     public SimulationWorker(Simulation simulation, String forgePath) {
         this.simulation = simulation;
-        this.analysisDir = new File(simulation.getSimulationDir().getPath() + "\\..\\Analysis\\ResultDataBase\\" + simulation.getName());
+        this.analysisDir = new File(simulation.getSimulationDir().getParent() + "\\Analysis\\ResultDataBase\\" + simulation.getName());
         this.forgePath = forgePath;
     }
 
@@ -44,6 +45,30 @@ public abstract class SimulationWorker {
         /* Create workdir for new simulation */
         recursiveCopy(simulation.getSimulationDir(), dest);
         logger.info(String.format("Kopiowanie z %s do %s", simulation.getSimulationDir(), dest.toString()));
+
+        try {
+
+//            File f = new File(getClass().getClassLoader().getResource("setup.bat").toString());
+            File f = new File("setup.bat");
+            BufferedReader is = new BufferedReader(new FileReader(f));
+            BufferedWriter os = new BufferedWriter(new FileWriter(new File(dest, "setup.bat")));
+            String line = is.readLine();
+            while (line != null) {
+                if (line.contains("SET SIM_NAME=\"Speczanie\\\"")) {
+                    line = line.replace("Speczanie", dest.getName());
+                }
+                os.write(line + System.getProperty("line.separator"));
+
+                line = is.readLine();
+            }
+            os.close();
+            is.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     protected void deleteFile(File file) {
@@ -61,14 +86,18 @@ public abstract class SimulationWorker {
         if (!resultDir.exists())
             resultDir.mkdir();
 
+
+
         /* TODO podobnie jak wyżej kopiowanie może nie działać */
         File source = new File(analysisDir.getPath() + "-" + currentFactor);
         File destDir = new File(resultDir, simulation.getName() + "-" + currentFactor);
-        if (!destDir.exists())
+        /*if (!destDir.exists())
             destDir.mkdir();
+        recursiveCopy(source, destDir);*/
+
+        DataPreparer.extractData(source, destDir, currentFactor);
 
         logger.info(String.format("Kopiowanie wynikow z %s do %s", source, destDir));
-        recursiveCopy(source, destDir);
         deleteFile(source);
     }
 
@@ -76,7 +105,7 @@ public abstract class SimulationWorker {
 
     public abstract void run();
 
-    protected abstract void startSimulation();
+    protected abstract void startSimulation(double simName);
 
     /*TODO przekazywać do simualtionWorker ścieżkę do projektu!*/
     protected void forceProjectSave() {
@@ -89,11 +118,13 @@ public abstract class SimulationWorker {
             e.printStackTrace();
         }
 
+        runCmd(new File(forgePath), forgePath + "\\GLPreEngine.exe", "-command", "\"cmd newSim.txt\"");
+    }
 
-        ProcessBuilder builder = new ProcessBuilder(
-                forgePath + "\\GLPreEngine.exe", "-command", "\"cmd newSim.txt\"");
-        builder.directory(new File(forgePath));
-        logger.info(builder.directory());
+    protected void runCmd(File workdir, String... args) {
+        ProcessBuilder builder = new ProcessBuilder(args);
+        builder.directory(workdir);
+        logger.info("RunCmd: " + builder.directory() + "\\ " +Arrays.toString(args));
         Process p = null;
         try {
             p = builder.start();

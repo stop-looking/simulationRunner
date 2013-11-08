@@ -49,23 +49,30 @@ public class CalibrationCurvesWorker extends SimulationWorker {
     public void run() {
         for (int i = 0; i < factors.length; ++i) {
             double currentFactor = factors[i];
+            String simName = simulation.getName() + "-" + currentFactor;
 
-            /* TODO
+            /*
             * 1 - utworzenie nowej symulacji z nowym wspolczynnikiem
             * 2 - przygotowanie srodowiska - SimulationWorker
             * 3 - wykonanie
             * 4 - zapis wynikow i sprzatanie
             * */
-
             setFrictionParameter(currentFactor);
             prepareEnviroment(currentFactor);
-            startSimulation();
+            startSimulation(currentFactor);
             saveResult(currentFactor);
         }
     }
 
     @Override
-    protected void startSimulation() {
-
+    protected void startSimulation(double factor) {
+        String cmd = String.format(RUN_SIMULATION_CMD, simulation.getName());
+        File dir = new File(analysisDir.getPath() + "-" + factor);
+        logger.info("Workdir: " + dir);
+//        runCmd(dir, cmd);
+//        "setup.bat non forge3 & PreparCalculFg3.exe %s.ref & forge3.exe"
+        runCmd(dir, dir + "\\setup.bat", "non", "forge3");
+        runCmd(dir, dir + "\\PreparCalculFg3.exe", simulation.getName() + ".ref");
+        runCmd(dir, dir + "\\forge3.exe");
     }
 }

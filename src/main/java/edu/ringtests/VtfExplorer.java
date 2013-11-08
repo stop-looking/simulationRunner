@@ -2,6 +2,7 @@ package edu.ringtests;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * @author Kamil Sikora
@@ -13,9 +14,13 @@ public class VtfExplorer {
 
     private final File vtfFile;
     private int[] columnsToFetch;
+    Logger logger;
+
 
     public VtfExplorer(File vtfFile, int[] columnsToFetch) throws FileNotFoundException {
+        logger = Logger.getLogger(getClass().getName());
         if (!vtfFile.exists()) {
+            logger.severe("File not found: " + vtfFile);
             throw new FileNotFoundException();
         }
 

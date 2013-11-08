@@ -1,5 +1,6 @@
 package edu.ringtests.view;
 
+import edu.ringtests.VtfExplorer;
 import edu.ringtests.simulation.CalibrationCurvesWorker;
 import edu.ringtests.simulation.Simulation;
 import edu.ringtests.simulation.SimulationWorker;
@@ -13,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Properties;
 
