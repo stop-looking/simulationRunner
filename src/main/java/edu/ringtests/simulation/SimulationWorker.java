@@ -17,7 +17,7 @@ public abstract class SimulationWorker {
 
     protected final String SAVE_PROJECT_CMD = "project open %s\n" +
             "simulation activate by name %s\n" +
-            "simulation save active";
+            "simulation save active\n\n";
     protected final String RUN_SIMULATION_CMD = "setup.bat non forge3 & PreparCalculFg3.exe %s.ref & forge3.exe";
 
     protected Simulation simulation;
@@ -39,6 +39,7 @@ public abstract class SimulationWorker {
             for (File file : dest.listFiles())
                 deleteFile(file);
         }
+
         dest.mkdir();
         logger.info(String.format("Folder %s nie istnieje.\n", dest.toString()));
 
@@ -86,9 +87,6 @@ public abstract class SimulationWorker {
         if (!resultDir.exists())
             resultDir.mkdir();
 
-
-
-        /* TODO podobnie jak wyżej kopiowanie może nie działać */
         File source = new File(analysisDir.getPath() + "-" + currentFactor);
         File destDir = new File(resultDir, simulation.getName() + "-" + currentFactor);
         /*if (!destDir.exists())
@@ -118,13 +116,14 @@ public abstract class SimulationWorker {
             e.printStackTrace();
         }
 
+        String s = forgePath + "\\GLPreEngine.exe" + "-command" + "\"cmd newSim.txt\"";
         runCmd(new File(forgePath), forgePath + "\\GLPreEngine.exe", "-command", "\"cmd newSim.txt\"");
     }
 
     protected void runCmd(File workdir, String... args) {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.directory(workdir);
-        logger.info("RunCmd: " + builder.directory() + "\\ " +Arrays.toString(args));
+        logger.info("RunCmd: " + builder.directory() + "\\ " + Arrays.toString(args));
         Process p = null;
         try {
             p = builder.start();
@@ -180,7 +179,6 @@ public abstract class SimulationWorker {
 
                 // Safe exit
                 fInStream.close();
-
                 fOutStream.close();
             }
         } catch (Exception ex) {
