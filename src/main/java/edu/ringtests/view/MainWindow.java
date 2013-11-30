@@ -1,6 +1,5 @@
 package edu.ringtests.view;
 
-import edu.ringtests.VtfExplorer;
 import edu.ringtests.simulation.CalibrationCurvesWorker;
 import edu.ringtests.simulation.Simulation;
 import edu.ringtests.simulation.SimulationWorker;
@@ -9,14 +8,10 @@ import org.apache.log4j.BasicConfigurator;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.*;
-import java.net.URL;
+import java.awt.event.*;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Properties;
 
 /**
  * @author Kamil Sikora
@@ -37,11 +32,14 @@ public class MainWindow {
     private JFrame frame;
 
     private final String PROPERTIES_FILE = "properties.xml";
-    private final String FORGE_PATH_KEY = "forgePath";
+    private final String FORGE_PATH = "forgePath";
+    private static final String LAST_PROJECT = "last_project_path";
 
     private Simulation selectedSimulation;
     private String forgePath;
     private String projectName;
+
+    private Configuration config;
 
     private ActionListener createFileChooseDialog(final String extension, final String description, final JTextField textField) {
         return new ActionListener() {
@@ -53,12 +51,17 @@ public class MainWindow {
                 fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 fc.showOpenDialog(null);
                 if (fc.getSelectedFile() != null) {
+                    saveLastProjectPath(fc.getSelectedFile().getPath());
                     textField.setText(fc.getSelectedFile().getPath());
                     populateSimulationBox(fc.getSelectedFile());
                 }
 
             }
         };
+    }
+
+    private void saveLastProjectPath(String path) {
+        config.addProperty(Configuration.LAST_PROJECT_KEY, path);
     }
 
     private void populateSimulationBox(File projectFile) {
@@ -93,6 +96,11 @@ public class MainWindow {
         }
     }
 
+    private void populateSimulationBox(String path) {
+        populateSimulationBox(new File(path));
+    }
+
+
     private void populateFrictionBox(final Simulation selectedSimulation) {
         File[] files = selectedSimulation.getSimulationDir().listFiles(new FilenameFilter() {
             @Override
@@ -113,8 +121,9 @@ public class MainWindow {
         });
     }
 
-
     public MainWindow() {
+        config = new Configuration();
+
         chooseDataButton.addActionListener(createFileChooseDialog("csv", "Plik CSV", dataFileField));
         chooseProjectButton.addActionListener(createFileChooseDialog("tpf", "Plik projektu Forge3", projectField));
         simulationBox.addItemListener(new ItemListener() {
@@ -143,35 +152,34 @@ public class MainWindow {
         });
 
         frame = new JFrame("Simulation Runner");
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                config.save();
+                super.windowClosing(e);
+            }
+        });
         frame.setContentPane(mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
 
-        loadProperties();
+        loadForgePath();
+
+        if (config.getProperty(LAST_PROJECT) != null) {
+            projectField.setText(config.getProperty(LAST_PROJECT));
+            populateSimulationBox(config.getProperty(LAST_PROJECT));
+        }
 
         frame.setVisible(true);
     }
 
-    private void loadProperties() {
-        Properties properties = new Properties();
-        File propFile = new File(PROPERTIES_FILE);
-        if (!propFile.exists()) {
+    private void loadForgePath() {
+        if (config.getProperty(FORGE_PATH) == null) {
             ForgePathDialog dialog = new ForgePathDialog();
-            properties.put(FORGE_PATH_KEY, dialog.getPath());
-            try {
-                properties.storeToXML(new FileOutputStream(PROPERTIES_FILE), "simulationRunner properties file");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            try {
-                properties.loadFromXML(new FileInputStream(PROPERTIES_FILE));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        forgePath = properties.getProperty(FORGE_PATH_KEY);
+            config.addProperty(FORGE_PATH, dialog.getPath());
+            forgePath = dialog.getPath();
+        } else
+            forgePath = config.getProperty(FORGE_PATH);
     }
 
     public static void main(String[] args) {
