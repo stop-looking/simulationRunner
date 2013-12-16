@@ -1,4 +1,4 @@
-package edu.ringtests;
+package edu.ringtests.file;
 
 import javax.swing.*;
 import java.io.*;
@@ -28,6 +28,7 @@ public class VtfExplorer {
         this.columnsToFetch = columnsToFetch;
     }
 
+    /* TODO pobierać tylko jedną linię.*/
     public double[][] fetchAll() {
         int omited = 0;
         BufferedReader reader = null;

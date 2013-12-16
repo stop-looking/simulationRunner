@@ -1,6 +1,9 @@
 package edu.ringtests.simulation;
 
-import java.io.*;
+import edu.ringtests.file.DataPreparer;
+
+import javax.swing.*;
+import java.io.File;
 
 /**
  * @author Kamil Sikora
@@ -14,35 +17,29 @@ public class CalibrationCurvesWorker extends SimulationWorker {
         this.factors = factors;
     }
 
-    /* TODO zapis parametrów symulacji musi odbywać się w głównym projekcie */
+    protected void saveResult(double currentFactor) {
+        saveResult(currentFactor, null);
+    }
+
     @Override
-    protected void setFrictionParameter(double factor) {
-        File frictionFile = simulation.getFrictionFile();
+    protected void saveResult(double currentFactor, String description) {
+        File resultDir = new File(RESULTS_PATH);
+        if (!resultDir.exists())
+            resultDir.mkdir();
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(frictionFile));
-            StringBuilder builder = new StringBuilder(400);
-            String line = reader.readLine();
-            do {
-                if (line.contains("mbarre")) {
-                    line = "mbarre = " + factor;
-                }
-                builder.append(line).append("\n");
-            }
-            while ((line = reader.readLine()) != null);
-            reader.close();
+        if (description == null)
+            description = "out";
 
-            FileWriter writer = new FileWriter(frictionFile, false);
-            writer.write(builder.toString());
-            writer.close();
+        File source = new File(analysisDir.getPath() + "-" + currentFactor);
+        File destDir = new File(resultDir, description + "-" + currentFactor + ".csv");
+        /*if (!destDir.exists())
+            destDir.mkdir();
+        recursiveCopy(source, destDir);*/
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        DataPreparer.extractData(source, destDir, currentFactor);
 
-        forceProjectSave();
+        logger.info(String.format("Kopiowanie wynikow z %s do %s", source, destDir));
+        deleteFile(source);
     }
 
     @Override
@@ -57,22 +54,16 @@ public class CalibrationCurvesWorker extends SimulationWorker {
             * 3 - wykonanie
             * 4 - zapis wynikow i sprzatanie
             * */
+
+            long start = System.currentTimeMillis() / 1000l;
             setFrictionParameter(currentFactor);
             prepareEnviroment(currentFactor);
             startSimulation(currentFactor);
             saveResult(currentFactor);
+            long end = System.currentTimeMillis() / 1000l;
+            logger.info(String.format("Czas symulacji dla wspolczynnika %f: %d sekund", currentFactor, start - end));
         }
+        JOptionPane.showMessageDialog(null, "Obliczenia zakończone");
     }
 
-    @Override
-    protected void startSimulation(double factor) {
-        String cmd = String.format(RUN_SIMULATION_CMD, simulation.getName());
-        File dir = new File(analysisDir.getPath() + "-" + factor);
-        logger.info("Workdir: " + dir);
-//        runCmd(dir, cmd);
-//        "setup.bat non forge3 & PreparCalculFg3.exe %s.ref & forge3.exe"
-        runCmd(dir, dir + "\\setup.bat", "non", "forge3");
-        runCmd(dir, dir + "\\PreparCalculFg3.exe", simulation.getName() + ".ref");
-        runCmd(dir, dir + "\\forge3.exe");
-    }
 }

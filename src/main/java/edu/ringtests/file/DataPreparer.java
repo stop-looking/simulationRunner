@@ -1,10 +1,9 @@
-package edu.ringtests;
+package edu.ringtests.file;
 
 import java.io.*;
 
 /**
  * @author Kamil Sikora
- * TODO działa, nie działa?
  */
 public class DataPreparer {
     public static void extractData(File source, File dest, double factor) {
@@ -43,7 +42,7 @@ public class DataPreparer {
 
         try {
             File outName = new File("out-" + factor + ".csv");
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outName));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(dest));
             writer.write(outBuilder.toString());
             writer.close();
 

@@ -1,6 +1,5 @@
 package edu.ringtests.simulation;
 
-import edu.ringtests.DataPreparer;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -13,7 +12,7 @@ import java.util.Arrays;
  *         Data: 28.09.13
  */
 public abstract class SimulationWorker {
-    private static final String RESULTS_PATH = ".\\simulationRunnerResults";
+    protected static final String RESULTS_PATH = ".\\simulationRunnerResults";
 
     protected final String SAVE_PROJECT_CMD = "project open %s\n" +
             "simulation activate by name %s\n" +
@@ -82,28 +81,50 @@ public abstract class SimulationWorker {
         file.delete();
     }
 
-    protected void saveResult(double currentFactor) {
-        File resultDir = new File(RESULTS_PATH);
-        if (!resultDir.exists())
-            resultDir.mkdir();
 
-        File source = new File(analysisDir.getPath() + "-" + currentFactor);
-        File destDir = new File(resultDir, simulation.getName() + "-" + currentFactor);
-        /*if (!destDir.exists())
-            destDir.mkdir();
-        recursiveCopy(source, destDir);*/
+    protected abstract void saveResult(double currentFactor, String description);
 
-        DataPreparer.extractData(source, destDir, currentFactor);
+    protected void setFrictionParameter(double factor) {
+        File frictionFile = simulation.getFrictionFile();
 
-        logger.info(String.format("Kopiowanie wynikow z %s do %s", source, destDir));
-        deleteFile(source);
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(frictionFile));
+            StringBuilder builder = new StringBuilder(400);
+            String line = reader.readLine();
+            do {
+                if (line.contains("mbarre")) {
+                    line = "mbarre = " + factor;
+                }
+                builder.append(line).append("\n");
+            }
+            while ((line = reader.readLine()) != null);
+            reader.close();
+
+            FileWriter writer = new FileWriter(frictionFile, false);
+            writer.write(builder.toString());
+            writer.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        forceProjectSave();
     }
-
-    protected abstract void setFrictionParameter(double factor);
 
     public abstract void run();
 
-    protected abstract void startSimulation(double simName);
+    protected void startSimulation(double factor) {
+        String cmd = String.format(RUN_SIMULATION_CMD, simulation.getName());
+        File dir = new File(analysisDir.getPath() + "-" + factor);
+        logger.info("Workdir: " + dir);
+//        runCmd(dir, cmd);
+//        "setup.bat non forge3 & PreparCalculFg3.exe %s.ref & forge3.exe"
+        runCmd(dir, dir + "\\setup.bat", "non", "forge3");
+        runCmd(dir, dir + "\\PreparCalculFg3.exe", simulation.getName() + ".ref");
+        runCmd(dir, dir + "\\forge3.exe");
+    }
 
     /*TODO przekazywać do simualtionWorker ścieżkę do projektu!*/
     protected void forceProjectSave() {
