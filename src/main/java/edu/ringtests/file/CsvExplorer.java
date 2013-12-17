@@ -10,27 +10,42 @@ import java.io.*;
 public class CsvExplorer {
     private final String SEPARATOR = ";";
 
-    private final File csvFile;
+    private File csvFile = null;
     private boolean hasHeader;
+    private BufferedReader reader;
 
-    public CsvExplorer(String csvFile, boolean hasHeader) {
-        this.csvFile = new File(csvFile);
+    public CsvExplorer(String fileName, boolean hasHeader) {
+        this(new File(fileName), hasHeader);
+    }
+
+    public CsvExplorer(File csvFile, boolean hasHeader) {
+        this.csvFile = csvFile;
         this.hasHeader = hasHeader;
+        try {
+            this.reader = new BufferedReader(new FileReader(this.csvFile));
+            if (hasHeader)
+                reader.readLine();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public double[][] fetchAll() {
-        BufferedReader reader = null;
-
         int linesCount = getNumberOfLines();
         int columnsCount = getNumberOfColumns();
         double[][] data = new double[linesCount][columnsCount];
         int j = 0;
 
         try {
-            reader = new BufferedReader(new FileReader(csvFile));
+            if (reader != null && reader.ready())
+                reader.close();
 
+            reader = new BufferedReader(new FileReader(csvFile));
             if (hasHeader)
                 reader.readLine();
+
             String line = reader.readLine();
             while (line != null) {
                 String[] tokens = line.split(SEPARATOR);
@@ -42,12 +57,14 @@ public class CsvExplorer {
                 ++j;
             }
             reader.close();
+            reader = null;
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(null, "Nie znaleziono pliku wejściowego!", "Błąd", JOptionPane.ERROR_MESSAGE);
             System.exit(-1);
         } catch (IOException e) {
             try {
                 reader.close();
+                reader = null;
                 System.exit(-1);
             } catch (IOException e1) {
                 e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -58,6 +75,38 @@ public class CsvExplorer {
         }
 
         return data;
+    }
+
+    public String fetchRawLine() {
+        String line = null;
+        try {
+            if (reader == null) {
+                reader = createNewReader();
+            }
+            line = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            reader = createNewReader();
+            line = fetchRawLine();
+        }
+
+        return line;
+    }
+
+    private BufferedReader createNewReader() {
+        BufferedReader r = null;
+        String line;
+        try {
+            r = new BufferedReader(new FileReader(csvFile));
+            if (hasHeader)
+                line = r.readLine();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return r;
     }
 
     private int getNumberOfColumns() {

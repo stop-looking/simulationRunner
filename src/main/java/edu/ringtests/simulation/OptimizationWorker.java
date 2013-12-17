@@ -1,6 +1,10 @@
 package edu.ringtests.simulation;
 
+import edu.ringtests.file.CsvExplorer;
+
 import java.io.File;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * @author Kamil Sikora
@@ -42,8 +46,102 @@ public class OptimizationWorker extends SimulationWorker {
         return 0.0;
     }
 
-    private class CalibrationCurves {
+    /**
+     * Contains information about calibration curves related to specific material.
+     */
+    public static class CalibrationCurves {
+        HashMap<Double, Double[][]> calibrationData;
 
+        public CalibrationCurves(File calibrationFile) {
+            calibrationData = fetchCalibrationData(calibrationFile);
+        }
+
+        /**
+         * Fetches whole content of calibration file.
+         */
+        private HashMap<Double, Double[][]> fetchCalibrationData(File calibrationFile) {
+            CsvExplorer explorer = new CsvExplorer(calibrationFile, true);
+            HashMap<Double, ValuePairs> map = new HashMap<>();
+            String line = null;
+            while ((line = explorer.fetchRawLine()) != null) {
+                double[] tokens = convertToNumeric(line);
+                Double coeff = tokens[0];
+                if (map.containsKey(coeff)) {
+                    map.get(coeff).add(tokens[1], tokens[2]);
+                } else {
+                    ValuePairs vp = new ValuePairs(tokens[1], tokens[2]);
+                    map.put(coeff, vp);
+                }
+            }
+
+            return toFinal(map);
+        }
+
+        /**
+         * Converts temporary HashMap to final form.
+         */
+        private HashMap<Double, Double[][]> toFinal(HashMap<Double, ValuePairs> map) {
+            HashMap<Double, Double[][]> result = new HashMap<>();
+            for (Double coeff : map.keySet())
+                result.put(coeff, map.get(coeff).toArray());
+
+            return result;
+        }
+
+        /**
+         * Converts raw line to tokens and further to numeric tokens.
+         *
+         * @return tokens converted to numerical form.
+         */
+        private double[] convertToNumeric(String line) {
+            double[] tokens = new double[3];
+
+            int i = 0;
+            for (String s : line.split(";")) {
+                tokens[i] = Double.parseDouble(s);
+                ++i;
+            }
+
+            return tokens;
+        }
+
+        /**
+         * @return array of calibration data of specific coefficient.
+         */
+        public Double[][] getCalibrationData(double coeff) {
+            return calibrationData.get(coeff);
+        }
+
+        /**
+         * Class used as temporary container for function arguments and coresponding values.
+         */
+        private class ValuePairs {
+            private LinkedList<Double> arguments;
+            private LinkedList<Double> values;
+
+            public ValuePairs(double arg, double val) {
+                arguments = new LinkedList<>();
+                values = new LinkedList<>();
+                arguments.add(arg);
+                values.add(val);
+            }
+
+            public void add(double arg, double val) {
+                arguments.add(arg);
+                values.add(val);
+            }
+
+            public Double[][] toArray() {
+                Double[][] result = new Double[values.size()][2];
+
+                for (int i = 0; i < values.size(); ++i) {
+                    result[i][0] = arguments.get(i);
+                    result[i][1] = values.get(i);
+                }
+
+                return result;
+            }
+        }
     }
 
 
