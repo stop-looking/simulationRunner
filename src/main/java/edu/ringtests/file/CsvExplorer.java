@@ -8,7 +8,7 @@ import java.io.*;
  *         Data: 15.12.13
  */
 public class CsvExplorer {
-    private final String SEPARATOR = ";";
+    public static final String SEPARATOR = ";";
 
     private File csvFile = null;
     private boolean hasHeader;

@@ -22,10 +22,31 @@ public class OptimizationWorker extends SimulationWorker {
      */
     private final File experimentResultsFile;
 
+    private CalibrationCurves calibrationData;
+    private LinkedList<Experiment> experiments;
+
     public OptimizationWorker(Simulation simulation, String forgePath, File calibrationFile, File experimentResultsFile) {
         super(simulation, forgePath);
         this.calibrationFile = calibrationFile;
+        this.calibrationData = new CalibrationCurves(calibrationFile);
+
         this.experimentResultsFile = experimentResultsFile;
+        experiments = fetchExperiments(experimentResultsFile);
+    }
+
+    private LinkedList<Experiment> fetchExperiments(File csvFile) {
+        CsvExplorer explorer = new CsvExplorer(csvFile, false);
+        String line = null;
+        LinkedList<Experiment> result = new LinkedList<>();
+        while ((line = explorer.fetchRawLine()) != null) {
+            String[] tokens = line.split(CsvExplorer.SEPARATOR);
+            String name = tokens[0];
+            double height = Double.parseDouble(tokens[1]);
+            double width = Double.parseDouble(tokens[2]);
+            result.add(new Experiment(name, height, width));
+        }
+
+        return result;
     }
 
     @Override
@@ -42,8 +63,8 @@ public class OptimizationWorker extends SimulationWorker {
         return 0.0;
     }
 
-    private double determineStartPoint(double width, double height) {
-        return 0.0;
+    public LinkedList<Experiment> getExperiments() {
+        return experiments;
     }
 
     /**
@@ -97,12 +118,16 @@ public class OptimizationWorker extends SimulationWorker {
             double[] tokens = new double[3];
 
             int i = 0;
-            for (String s : line.split(";")) {
+            for (String s : line.split(CsvExplorer.SEPARATOR)) {
                 tokens[i] = Double.parseDouble(s);
                 ++i;
             }
 
             return tokens;
+        }
+
+        private double determineStartPoint(double width, double height) {
+            return 0.0;
         }
 
         /**
