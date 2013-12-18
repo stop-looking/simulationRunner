@@ -1,8 +1,9 @@
 package edu.ringtests.view;
 
-import edu.ringtests.simulation.CalibrationCurvesWorker;
 import edu.ringtests.simulation.Simulation;
-import edu.ringtests.simulation.SimulationWorker;
+import edu.ringtests.simulation.workers.CalibrationCurvesWorker;
+import edu.ringtests.simulation.workers.OptimizationWorker;
+import edu.ringtests.simulation.workers.SimulationWorker;
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.Loader;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -29,9 +30,11 @@ public class MainWindow {
     private JRadioButton calibrationCurvesButtion;
     private JTextField calibrationCoeffsField;
     private JRadioButton optimalizationButton;
-    private JTextField dataFileField;
-    private JButton chooseDataButton;
+    private JTextField experimentPathField;
+    private JButton chooseExperimentButton;
     private JButton startButton;
+    private JTextField calibrationPathField;
+    private JButton chooseCalibrationDataButton;
     private JFrame frame;
 
     private final String PROPERTIES_FILE = "properties.xml";
@@ -128,8 +131,10 @@ public class MainWindow {
     public MainWindow() {
         config = new Configuration();
 
-        chooseDataButton.addActionListener(createFileChooseDialog("csv", "Plik CSV", dataFileField));
+        chooseCalibrationDataButton.addActionListener(createFileChooseDialog("csv", "Plik CSV", calibrationPathField));
+        chooseExperimentButton.addActionListener(createFileChooseDialog("csv", "Plik CSV", experimentPathField));
         chooseProjectButton.addActionListener(createFileChooseDialog("tpf", "Plik projektu Forge3", projectField));
+
         simulationBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -150,8 +155,20 @@ public class MainWindow {
                         factors[i] = Double.parseDouble(factorsString[i]);
 
                     worker = new CalibrationCurvesWorker(selectedSimulation, factors, forgePath);
-                    worker.run();
+
                 }
+                if (optimalizationButton.isSelected()) {
+                    if (experimentPathField.getText().isEmpty() || calibrationPathField.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "Nie wybrano pliku.", "Błąd", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    File calibrationFile = new File(calibrationPathField.getText());
+                    File experimentFile = new File(experimentPathField.getText());
+                    worker = new OptimizationWorker(selectedSimulation, forgePath, calibrationFile, experimentFile);
+                }
+
+                if (worker != null)
+                    worker.run();
             }
         });
 

@@ -1,5 +1,6 @@
-package edu.ringtests.simulation;
+package edu.ringtests.simulation.workers;
 
+import edu.ringtests.simulation.Simulation;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -44,7 +45,7 @@ public abstract class SimulationWorker {
 
         /* Create workdir for new simulation */
         recursiveCopy(simulation.getSimulationDir(), dest);
-        logger.info(String.format("Kopiowanie z %s do %s", simulation.getSimulationDir(), dest.toString()));
+        logger.info(String.format("Copying from %s to %s", simulation.getSimulationDir(), dest.toString()));
 
         try {
 
@@ -65,8 +66,10 @@ public abstract class SimulationWorker {
             is.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
     }
@@ -106,8 +109,10 @@ public abstract class SimulationWorker {
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         forceProjectSave();
@@ -135,6 +140,7 @@ public abstract class SimulationWorker {
             cmdFile.close();
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         String s = forgePath + "\\GLPreEngine.exe" + "-command" + "\"cmd newSim.txt\"";
@@ -159,6 +165,7 @@ public abstract class SimulationWorker {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         }
         System.out.println("\n\n");
     }

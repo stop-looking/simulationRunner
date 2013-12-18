@@ -1,6 +1,7 @@
-package edu.ringtests.simulation;
+package edu.ringtests.simulation.workers;
 
 import edu.ringtests.file.DataPreparer;
+import edu.ringtests.simulation.Simulation;
 
 import javax.swing.*;
 import java.io.File;
@@ -55,12 +56,12 @@ public class CalibrationCurvesWorker extends SimulationWorker {
             * 4 - zapis wynikow i sprzatanie
             * */
 
-            long start = System.currentTimeMillis() / 1000l;
+            long start = System.currentTimeMillis() / 1000;
             setFrictionParameter(currentFactor);
             prepareEnviroment(currentFactor);
             startSimulation(currentFactor);
             saveResult(currentFactor);
-            long end = System.currentTimeMillis() / 1000l;
+            long end = System.currentTimeMillis() / 1000;
             logger.info(String.format("Czas symulacji dla wspolczynnika %f: %d sekund", currentFactor, start - end));
         }
         JOptionPane.showMessageDialog(null, "Obliczenia zakończone");

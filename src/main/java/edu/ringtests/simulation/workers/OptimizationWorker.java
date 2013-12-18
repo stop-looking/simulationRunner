@@ -1,6 +1,8 @@
-package edu.ringtests.simulation;
+package edu.ringtests.simulation.workers;
 
 import edu.ringtests.file.CsvExplorer;
+import edu.ringtests.simulation.Experiment;
+import edu.ringtests.simulation.Simulation;
 
 import java.io.File;
 import java.util.HashMap;
@@ -35,7 +37,7 @@ public class OptimizationWorker extends SimulationWorker {
     }
 
     private LinkedList<Experiment> fetchExperiments(File csvFile) {
-        CsvExplorer explorer = new CsvExplorer(csvFile, false);
+        CsvExplorer explorer = new CsvExplorer(csvFile, true);
         String line = null;
         LinkedList<Experiment> result = new LinkedList<>();
         while ((line = explorer.fetchRawLine()) != null) {
@@ -57,12 +59,38 @@ public class OptimizationWorker extends SimulationWorker {
 
     @Override
     public void run() {
-        double eps = 0.07;
+        double eps = 0.007;
         double maxIter = 15;
         for (Experiment experiment : experiments) {
-            double startPoint = calibrationData.determineStartPoint(experiment.getHeight(), experiment.getInnerDiameter());
+            double currentFactor = calibrationData.determineStartPoint(experiment.getHeight(), experiment.getInnerDiameter());
+            Double[] calibration = calibrationData.findClosestDiameter(currentFactor, experiment);
+            logger.info(String.format("Found closest height: %f and width: %f for m=%f for experiment: %s", calibration[0], calibration[1], currentFactor, experiment));
 
+            int iter = 0;
+            while (iter < maxIter) {
+                long start = System.currentTimeMillis() / 1000;
+                setFrictionParameter(currentFactor);
+                prepareEnviroment(currentFactor);
+                startSimulation(currentFactor);
+                long end = System.currentTimeMillis() / 1000;
+                logger.info(String.format("Simulation time for %s sample and m=%f: %d seconds", experiment.getName(), currentFactor, start - end));
+
+                CalibrationCurves result = getResult(currentFactor);
+                if (eps >= absDifference(experiment.getInnerDiameter(), calibration[1])) {
+                    /* cieszymy się*/
+                    break;
+                }
+
+            }
         }
+    }
+
+    private CalibrationCurves getResult(double currentFactor) {
+        return null;  //To change body of created methods use File | Settings | File Templates.
+    }
+
+    private static double absDifference(double a, Double b) {
+        return Math.abs(Math.abs(a) - Math.abs(b));
     }
 
     public double findNewFactor(double current, double next) {
@@ -147,9 +175,9 @@ public class OptimizationWorker extends SimulationWorker {
 
             double closestFactor = 0.0;
             double absWidth = Math.abs(width);
-            double minDist = Math.abs(Math.abs(calibrationData.get(closestFactor)[closestArgs.get(0.0)][1]) - absWidth);
+            double minDist = absDifference(calibrationData.get(closestFactor)[closestArgs.get(0.0)][1], absWidth);
             for (Double frictionFact : closestArgs.keySet()) {
-                double dist = Math.abs(Math.abs(calibrationData.get(frictionFact)[closestArgs.get(frictionFact)][1]) - absWidth);
+                double dist = absDifference(calibrationData.get(frictionFact)[closestArgs.get(frictionFact)][1], absWidth);
                 if (dist < minDist) {
                     minDist = dist;
                     closestFactor = frictionFact;
@@ -160,16 +188,15 @@ public class OptimizationWorker extends SimulationWorker {
         }
 
         /**
-         * @param value compared value.
+         * @param value compared value (height).
          * @param array array with calibration data.
          * @return index of closest argment from given array.
          */
         private int findClosestArg(double value, Double[][] array) {
             int index = 0;
-            double absVal = Math.abs(value);
-            double min = Math.abs(Math.abs(array[0][0]) - absVal);
+            double min = absDifference(array[0][0], value);
             for (int i = 1; i < array.length; ++i) {
-                double dist = Math.abs(Math.abs(array[i][0]) - absVal);
+                double dist = absDifference(array[i][0], value);
                 if (dist < min) {
                     min = dist;
                     index = i;
@@ -184,6 +211,18 @@ public class OptimizationWorker extends SimulationWorker {
          */
         public Double[][] getCalibrationData(double coeff) {
             return calibrationData.get(coeff);
+        }
+
+        /**
+         * Finds closest diameter reduction to experimental results, for specified friction factor from calibration data.
+         *
+         * @return arrray of two elements with height and diameter reduction closest to experiment. First element is height reduction, second diameter reduction.
+         */
+        public Double[] findClosestDiameter(double frictionFactor, Experiment experiment) {
+            Double[][] calibration = calibrationData.get(frictionFactor);
+            int index = findClosestArg(experiment.getHeight(), calibration);
+
+            return calibration[index];
         }
 
         /**

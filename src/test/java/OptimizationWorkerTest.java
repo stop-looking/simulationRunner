@@ -1,6 +1,6 @@
 import edu.ringtests.simulation.Experiment;
-import edu.ringtests.simulation.OptimizationWorker;
 import edu.ringtests.simulation.Simulation;
+import edu.ringtests.simulation.workers.OptimizationWorker;
 import org.junit.Assert;
 import org.junit.Test;
 

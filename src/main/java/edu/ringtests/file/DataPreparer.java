@@ -6,8 +6,14 @@ import java.io.*;
  * @author Kamil Sikora
  */
 public class DataPreparer {
+    /**
+     * Method save results of simulation in destined csv file.
+     *
+     * @param source path of simulation analysis directory.
+     * @param dest   destination csv file
+     * @param factor friction factor
+     */
     public static void extractData(File source, File dest, double factor) {
-        int[] columnsIndex = {0, 1, 2, 3, 4};
 
         double[][] z1Data = new double[0][], z2Data = new double[0][],
                 x1Data = new double[0][], x2Data = new double[0][];
@@ -52,6 +58,10 @@ public class DataPreparer {
             e.printStackTrace();
         }
 
+    }
+
+    public static double[][] getDiameterReductionPecentage() {
+        return null;
     }
 }
 
