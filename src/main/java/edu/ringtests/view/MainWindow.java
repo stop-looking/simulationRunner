@@ -3,7 +3,9 @@ package edu.ringtests.view;
 import edu.ringtests.simulation.CalibrationCurvesWorker;
 import edu.ringtests.simulation.Simulation;
 import edu.ringtests.simulation.SimulationWorker;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import org.apache.log4j.helpers.Loader;
+import org.apache.log4j.xml.DOMConfigurator;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -11,6 +13,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -40,6 +43,7 @@ public class MainWindow {
     private String projectName;
 
     private Configuration config;
+    private static Logger logger = Logger.getLogger(MainWindow.class);
 
     private ActionListener createFileChooseDialog(final String extension, final String description, final JTextField textField) {
         return new ActionListener() {
@@ -183,7 +187,9 @@ public class MainWindow {
     }
 
     public static void main(String[] args) {
-        BasicConfigurator.configure();
+        URL resource = Loader.getResource("configs/log4j-conf.xml");
+        DOMConfigurator.configure(resource);
+        logger.info("simulationRunner initialized");
         new MainWindow();
     }
 

@@ -51,12 +51,18 @@ public class OptimizationWorker extends SimulationWorker {
 
     @Override
     protected void saveResult(double currentFactor, String description) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
+
     }
 
     @Override
     public void run() {
+        double eps = 0.07;
+        double maxIter = 15;
+        for (Experiment experiment : experiments) {
+            double startPoint = calibrationData.determineStartPoint(experiment.getHeight(), experiment.getInnerDiameter());
 
+        }
     }
 
     public double findNewFactor(double current, double next) {
@@ -71,6 +77,10 @@ public class OptimizationWorker extends SimulationWorker {
      * Contains information about calibration curves related to specific material.
      */
     public static class CalibrationCurves {
+        /**
+         * HashMap caointaing calibration data. Key is friction factor, value is two dimensional array where <i>array[][0]</i>
+         * is per cent of height redution and <i>array[][1]</i> is per cent of inner diameter reduction.
+         */
         HashMap<Double, Double[][]> calibrationData;
 
         public CalibrationCurves(File calibrationFile) {
@@ -126,8 +136,47 @@ public class OptimizationWorker extends SimulationWorker {
             return tokens;
         }
 
-        private double determineStartPoint(double width, double height) {
-            return 0.0;
+        /**
+         * @return friction factor that is closest to experimental result.
+         */
+        public double determineStartPoint(final double height, final double width) {
+            HashMap<Double, Integer> closestArgs = new HashMap<>();
+            for (Double frictionFact : calibrationData.keySet()) {
+                closestArgs.put(frictionFact, findClosestArg(height, calibrationData.get(frictionFact)));
+            }
+
+            double closestFactor = 0.0;
+            double absWidth = Math.abs(width);
+            double minDist = Math.abs(Math.abs(calibrationData.get(closestFactor)[closestArgs.get(0.0)][1]) - absWidth);
+            for (Double frictionFact : closestArgs.keySet()) {
+                double dist = Math.abs(Math.abs(calibrationData.get(frictionFact)[closestArgs.get(frictionFact)][1]) - absWidth);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestFactor = frictionFact;
+                }
+            }
+
+            return closestFactor;
+        }
+
+        /**
+         * @param value compared value.
+         * @param array array with calibration data.
+         * @return index of closest argment from given array.
+         */
+        private int findClosestArg(double value, Double[][] array) {
+            int index = 0;
+            double absVal = Math.abs(value);
+            double min = Math.abs(Math.abs(array[0][0]) - absVal);
+            for (int i = 1; i < array.length; ++i) {
+                double dist = Math.abs(Math.abs(array[i][0]) - absVal);
+                if (dist < min) {
+                    min = dist;
+                    index = i;
+                }
+            }
+
+            return index;
         }
 
         /**
