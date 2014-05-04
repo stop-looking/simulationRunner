@@ -1,3 +1,5 @@
+package edu.ringtests.test;
+
 import edu.ringtests.file.CsvExplorer;
 import org.junit.Assert;
 import org.junit.Test;

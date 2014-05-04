@@ -34,8 +34,8 @@ public class VtfExplorer {
         BufferedReader reader = null;
 
         int linesCount = getNumberOfLines() - 9;
-        double[][] data = new double[columnsToFetch.length][linesCount];
-        int j = 0;
+        double[][] data = new double[linesCount][columnsToFetch.length];
+        int i = 0;
 
         try {
             reader = new BufferedReader(new FileReader(vtfFile));
@@ -49,11 +49,11 @@ public class VtfExplorer {
                     continue;
                 }
 
-                for (int i = 0; i < columnsToFetch.length; i++) {
-                    data[i][j] = Double.parseDouble(tokens[columnsToFetch[i]]);
+                for (int j = 0; j < columnsToFetch.length; j++) {
+                    data[i][j] = Double.parseDouble(tokens[columnsToFetch[j]]);
                 }
                 line = reader.readLine();
-                ++j;
+                ++i;
             }
             reader.close();
         } catch (FileNotFoundException e) {

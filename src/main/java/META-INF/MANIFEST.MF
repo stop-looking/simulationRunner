@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: edu.ringtests.view.MainWindow
+Main-Class: edu.ringtests.file.DataPreparer
 

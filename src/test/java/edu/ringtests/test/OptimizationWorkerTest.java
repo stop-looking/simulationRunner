@@ -1,3 +1,5 @@
+package edu.ringtests.test;
+
 import edu.ringtests.simulation.Experiment;
 import edu.ringtests.simulation.Simulation;
 import edu.ringtests.simulation.workers.OptimizationWorker;
@@ -17,7 +19,7 @@ public class OptimizationWorkerTest {
         OptimizationWorker.CalibrationCurves cc = new OptimizationWorker.CalibrationCurves(new File("calibration-test.csv"));
 
         Double[][] calibrationData = cc.getCalibrationData(0.0);
-        Double[] expected = new Double[]{0.493612288, -0.42256962};
+        Double[] expected = new Double[]{0.488593115, -0.41478481};
 
         Assert.assertArrayEquals(String.valueOf(calibrationData[0]), calibrationData[0], expected);
     }
